@@ -1,0 +1,6 @@
+@pr6_HostAddress = http://localhost:5016
+
+GET {{pr6_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
