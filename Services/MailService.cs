@@ -4,9 +4,8 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using pr6.Common.Options;
-using pr6.Interfaces;
 using pr6.Models.Options;
+using pr6.Interfaces;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
 namespace pr6.Services

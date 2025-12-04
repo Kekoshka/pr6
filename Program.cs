@@ -2,20 +2,13 @@ using pr6.Models.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
 builder.Services.Configure<MailOptions>(builder.Configuration.GetSection(nameof(MailOptions)));
+builder.Services.Configure<RandomOptions>(builder.Configuration.GetSection(nameof(RandomOptions)));
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.UseHttpsRedirection();
 
