@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using pr6.Context;
 using pr6.Models.Options;
 
@@ -6,7 +9,7 @@ namespace pr6.Common.Extensions
 {
     public static class JWTExtensions
     {
-        public static void ConfigureJWTAuthentication(IServiceCollection services)
+        public static void ConfigureJWTAuthentication(this IServiceCollection services)
         {
             var serviceProvider = services.BuildServiceProvider();
             JWTOptions JWToptions = serviceProvider.GetService<IOptions<JWTOptions>>().Value;

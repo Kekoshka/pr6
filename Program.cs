@@ -1,3 +1,4 @@
+using pr6.Common.Extensions;
 using pr6.Models.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.Configure<MailOptions>(builder.Configuration.GetSection(nameof(MailOptions)));
 builder.Services.Configure<RandomOptions>(builder.Configuration.GetSection(nameof(RandomOptions)));
+
+builder.Services.ConfigureJWTAuthentication();
 
 var app = builder.Build();
 
