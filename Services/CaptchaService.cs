@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using pr6.Interfaces;
 using pr6.Models;
 using pr6.Models.Options;
@@ -12,11 +13,17 @@ namespace pr6.Services
     {
         IRandomService _randomService;
         CaptchaOptions _co;
+        IMemoryCache _cache;
+        IHttpContextAccessor _context;
         public CaptchaService(IRandomService randomService,
-            IOptions<CaptchaOptions> captchaOptions) 
+            IOptions<CaptchaOptions> captchaOptions,
+            IMemoryCache cache,
+            IHttpContextAccessor context) 
         {
             _randomService = randomService;
             _co = captchaOptions.Value;
+            _cache = cache;
+            _context = context;
         }
         public Captcha GenerateCaptcha()
         {
@@ -33,12 +40,26 @@ namespace pr6.Services
             using MemoryStream memoryStream = new();
             bitmap.Save(memoryStream, ImageFormat.Png);
 
-            return new Captcha()
+            var captcha = new Captcha()
             {
                 Id = Guid.NewGuid(),
                 Image = memoryStream.ToArray(),
                 Value = captchaText
             };
+
+            _cache.Set(captcha.Id, captcha);
+
+            return captcha;
         }
+        public bool Verify(Guid captchaId, string value)
+        {
+            bool isVerify = _cache.TryGetValue(captchaId, out Captcha captcha) && captcha.Value == value;
+            if (!isVerify) return false;
+
+            var clientIp = _context.HttpContext.Connection.RemoteIpAddress;
+            _cache.Set("Captcha_" + clientIp, true);
+            return true;
+        }
+
     }
 }

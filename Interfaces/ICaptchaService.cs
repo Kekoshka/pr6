@@ -1,6 +1,9 @@
-﻿namespace pr6.Interfaces
+﻿using pr6.Models;
+
+namespace pr6.Interfaces
 {
-    public class ICaptchaService
+    public interface ICaptchaService
     {
+        Captcha GenerateCaptcha();
     }
 }

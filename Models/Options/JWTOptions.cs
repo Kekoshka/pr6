@@ -4,6 +4,8 @@
     {
         public string Issuer { get; set; } = "";
         public string Key { get; set; } = "";
-        public int LifeTimeFromMinutes { get; set; } = 0;
+        public int LifeTimeAccessFromMinutes { get; set; } = 0;
+        public int LifeTimeRefreshFromMinutes { get; set; } = 0;
+
     }
 }

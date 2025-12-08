@@ -13,6 +13,10 @@ builder.Services.ConfigureJWTAuthentication();
 
 var app = builder.Build();
 
+app.UseExceptionHandling();
+
+app.UseCaptcha();
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
