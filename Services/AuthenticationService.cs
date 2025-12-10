@@ -30,7 +30,7 @@ namespace pr6.Services
             _tokenService = tokenService;
         }
 
-        public async Task StartAuthenticate(UserCredentialsDTO userCredentials)
+        public async Task StartAuthenticateAsync(UserCredentialsDTO userCredentials)
         {
             var existsUser = await _context.Users.FirstOrDefaultAsync(u => u.Mail == userCredentials.Mail);
             if (existsUser is null) throw new UnauthorizedException("User with this credentials not found");
@@ -43,7 +43,7 @@ namespace pr6.Services
 
             _cache.Set("Authenticate_" + userCredentials.Mail, code);
         }
-        public async Task<TokenPairDTO> EndAuthenticate(string mail, string verifyCode)
+        public async Task<TokenPairDTO> EndAuthenticateAsync(string mail, string verifyCode)
         {
             var isGet = _cache.TryGetValue("Authenticate_" + mail, out string code);
             if (!isGet) throw new ForbiddenException("User with this credentials not found");
@@ -52,8 +52,6 @@ namespace pr6.Services
 
             var user = _context.Users.Single(u => u.Mail == mail);
             return _tokenService.GetJWTPair(user);
-
-
         }
     }
 }

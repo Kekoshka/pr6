@@ -10,25 +10,28 @@ namespace pr6.Middlewares
         readonly RequestDelegate _next;
         IMemoryCache _memoryCache;
         ICaptchaService _captchaService;
+        IRequestService _requestService;
         public CaptchaMiddleware(RequestDelegate next,
             IMemoryCache memoryCache,
-            ICaptchaService captchaService)
+            ICaptchaService captchaService,
+            IRequestService requestService)
         {
             _next = next;
             _memoryCache = memoryCache;
             _captchaService = captchaService;
+            _requestService = requestService;
         }
         public void Invoke(HttpContext context)
         {
-            var userIp = context.Connection.RemoteIpAddress;
-            _memoryCache.TryGetValue(userIp, out bool isPassedCaptcha);
-            if (isPassedCaptcha) _next(context); 
-            else RedirectToVerification(context);
+            if (IsNeedToSolveCaptcha(context))
+            {
+                _requestService.SaveRequestInCache(context);
+                RedirectToVerification(context);
+            }
         }
         private Task RedirectToVerification(HttpContext context)
         {
             var captcha = _captchaService.GenerateCaptcha();
-            _memoryCache.Set("Captcha_" + context.Connection.RemoteIpAddress, false);
 
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             context.Response.ContentType = "application/json";
@@ -39,6 +42,10 @@ namespace pr6.Middlewares
                 captcha = captcha.Image
             };
             return context.Response.WriteAsJsonAsync(response);
+        }
+        private bool IsNeedToSolveCaptcha(HttpContext context)
+        {
+            return true;
         }
     }
 }

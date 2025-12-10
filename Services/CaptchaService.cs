@@ -57,9 +57,7 @@ namespace pr6.Services
             if (!isVerify) return false;
 
             var clientIp = _context.HttpContext.Connection.RemoteIpAddress;
-            _cache.Set("Captcha_" + clientIp, true);
             return true;
         }
-
     }
 }

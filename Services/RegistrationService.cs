@@ -42,7 +42,6 @@ namespace pr6.Services
             };
             _memoryCache.Set(code, newUser);
             await _mailService.SendMailAsync(userCredentials.Mail, "Код для подтверждения регистрации", $"Ваш код для подтверждения регистрации: {code}.");
-            
         }
         public async Task EndRegistrationAsync(string code,CancellationToken cancellationToken)
         {

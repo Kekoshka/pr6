@@ -8,8 +8,12 @@ builder.Services.AddOpenApi();
 
 builder.Services.Configure<MailOptions>(builder.Configuration.GetSection(nameof(MailOptions)));
 builder.Services.Configure<RandomOptions>(builder.Configuration.GetSection(nameof(RandomOptions)));
+builder.Services.Configure<JWTOptions>(builder.Configuration.GetSection(nameof(RandomOptions)));
+builder.Services.Configure<CaptchaOptions>(builder.Configuration.GetSection(nameof(CaptchaOptions)));
 
 builder.Services.ConfigureJWTAuthentication();
+
+builder.Services.RegisterExecutingAsseblyServices();
 
 var app = builder.Build();
 
