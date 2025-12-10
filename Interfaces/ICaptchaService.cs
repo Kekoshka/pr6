@@ -4,7 +4,7 @@ namespace pr6.Interfaces
 {
     public interface ICaptchaService
     {
-        Captcha GenerateCaptcha();
-        bool Verify(Guid captchaId, string value);
+        Captcha GenerateCaptcha(string requestId);
+        bool Verify(string requestId, string value);
     }
 }

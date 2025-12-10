@@ -30,27 +30,27 @@ namespace pr6.Services
             _tokenService = tokenService;
         }
 
-        public async Task StartAuthenticateAsync(UserCredentialsDTO userCredentials)
+        public async Task StartAuthenticateAsync(UserCredentialsDTO userCredentials, CancellationToken cancellationToken)
         {
-            var existsUser = await _context.Users.FirstOrDefaultAsync(u => u.Mail == userCredentials.Mail);
+            var existsUser = await _context.Users.FirstOrDefaultAsync(u => u.Mail == userCredentials.Mail, cancellationToken);
             if (existsUser is null) throw new UnauthorizedException("User with this credentials not found");
 
             var passwordIsValid = _hashService.Verify(userCredentials.Password, existsUser.PasswordHash);
             if (!passwordIsValid) throw new UnauthorizedException("User with this credentials not found");
 
             var code = _randomService.GenerateTempCode();
-            await _mailService.SendMailAsync(userCredentials.Mail, "Подтверждение авторизации", $"Ваш код для подтверждения авторизации: {code}.");
+            await _mailService.SendMailAsync(userCredentials.Mail, "Подтверждение авторизации", $"Ваш код для подтверждения авторизации: {code}.", cancellationToken);
 
             _cache.Set("Authenticate_" + userCredentials.Mail, code);
         }
-        public async Task<TokenPairDTO> EndAuthenticateAsync(string mail, string verifyCode)
+        public async Task<TokenPairDTO> EndAuthenticateAsync(string mail, string verifyCode, CancellationToken cancellationToken)
         {
             var isGet = _cache.TryGetValue("Authenticate_" + mail, out string code);
             if (!isGet) throw new ForbiddenException("User with this credentials not found");
 
             if (code != verifyCode) throw new ForbiddenException("Invalid code");
 
-            var user = _context.Users.Single(u => u.Mail == mail);
+            var user = await _context.Users.SingleAsync(u => u.Mail == mail, cancellationToken);
             return _tokenService.GetJWTPair(user);
         }
     }

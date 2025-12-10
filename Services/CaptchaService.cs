@@ -25,7 +25,7 @@ namespace pr6.Services
             _cache = cache;
             _context = context;
         }
-        public Captcha GenerateCaptcha()
+        public Captcha GenerateCaptcha(string requestId)
         {
             var captchaText = _randomService.GenerateCaptcha();
 
@@ -47,13 +47,13 @@ namespace pr6.Services
                 Value = captchaText
             };
 
-            _cache.Set(captcha.Id, captcha);
+            _cache.Set(requestId, captcha);
 
             return captcha;
         }
-        public bool Verify(Guid captchaId, string value)
+        public bool Verify(string requestId, string value)
         {
-            bool isVerify = _cache.TryGetValue(captchaId, out Captcha captcha) && captcha.Value == value;
+            bool isVerify = _cache.TryGetValue(requestId, out Captcha captcha) && captcha.Value == value;
             if (!isVerify) return false;
 
             var clientIp = _context.HttpContext.Connection.RemoteIpAddress;

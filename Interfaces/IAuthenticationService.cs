@@ -4,7 +4,7 @@ namespace pr6.Interfaces
 {
     public interface IAuthenticationService
     {
-        Task StartAuthenticateAsync(UserCredentialsDTO userCredentials);
-        Task<TokenPairDTO> EndAuthenticateAsync(string mail, string verifyCode);
+        Task StartAuthenticateAsync(UserCredentialsDTO userCredentials, CancellationToken cancellationToken);
+        Task<TokenPairDTO> EndAuthenticateAsync(string mail, string verifyCode, CancellationToken cancellationToken);
     }
 }

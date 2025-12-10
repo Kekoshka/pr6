@@ -2,50 +2,59 @@
 using pr6.Interfaces;
 using System.Net;
 using System.Net.Mime;
+using System.Threading.Tasks;
 
 namespace pr6.Middlewares
 {
     public class CaptchaMiddleware
     {
         readonly RequestDelegate _next;
-        IMemoryCache _memoryCache;
-        ICaptchaService _captchaService;
-        IRequestService _requestService;
-        public CaptchaMiddleware(RequestDelegate next,
+        public CaptchaMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task Invoke(
+            HttpContext context,
             IMemoryCache memoryCache,
             ICaptchaService captchaService,
             IRequestService requestService)
         {
-            _next = next;
-            _memoryCache = memoryCache;
-            _captchaService = captchaService;
-            _requestService = requestService;
-        }
-        public void Invoke(HttpContext context)
-        {
+            var cancellationToken = context.RequestAborted;
             if (IsNeedToSolveCaptcha(context))
             {
-                _requestService.SaveRequestInCache(context);
-                RedirectToVerification(context);
+                var requestId = await requestService.SaveRequestInCacheAsync(context, cancellationToken);
+                await RedirectToVerification(context, requestId, captchaService);
+                return;
             }
+
+            await _next(context);
         }
-        private Task RedirectToVerification(HttpContext context)
+        private Task RedirectToVerification(HttpContext context, string requestId, ICaptchaService captchaService )
         {
-            var captcha = _captchaService.GenerateCaptcha();
+            var captcha = captchaService.GenerateCaptcha(requestId);
 
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             context.Response.ContentType = "application/json";
             var response = new
             {
                 error = "Необходимо пройти капчу!",
-                captchaId = captcha.Id,
+                requestId,
                 captcha = captcha.Image
             };
             return context.Response.WriteAsJsonAsync(response);
         }
         private bool IsNeedToSolveCaptcha(HttpContext context)
         {
-            return true;
+            List<string> Methods = new()
+            {
+                "StartAuthenticationAsync",
+                "StartRecoverPasswordAsync",
+                "StartRegistrationAsync"
+            };
+            if(Methods.Any(m => context.Request.Path.ToString().Contains(m)) && !context.Request.Headers.Any(h => h.Key == "is-server" && h.Value == "true"))
+                return true;
+            return false;
         }
     }
 }

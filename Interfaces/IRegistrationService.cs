@@ -10,7 +10,6 @@ namespace pr6.Interfaces
     {
         Task StartRegistrationAsync(UserCredentialsDTO userCredentials, CancellationToken cancellationToken);
         Task EndRegistrationAsync(string code, CancellationToken cancellationToken);
-        Task StartRecoverPasswordAsync(string mail);
-        Task EndRecoverPasswordAsync(string mail, string code, string newPassword);
+
     }
 }

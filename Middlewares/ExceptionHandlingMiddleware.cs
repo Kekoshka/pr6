@@ -8,16 +8,13 @@ namespace pr6.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-        private readonly ContentTypesOptions _contentTypes;
 
         public ExceptionHandlingMiddleware(
             RequestDelegate next, 
-            ILogger<ExceptionHandlingMiddleware> logger,
-            IOptions<ContentTypesOptions> contentTypes)
+            ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
             _logger = logger;
-            _contentTypes = contentTypes.Value;
         }
         public async Task InvokeAsync(HttpContext context)
         {
@@ -47,7 +44,7 @@ namespace pr6.Middlewares
 
 
             context.Response.StatusCode = statusCode;
-            context.Response.ContentType = _contentTypes.Json;
+            context.Response.ContentType = "application/json";
 
             var response = new
             {

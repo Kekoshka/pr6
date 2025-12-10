@@ -1,21 +1,32 @@
+using Microsoft.EntityFrameworkCore;
 using pr6.Common.Extensions;
+using pr6.Context;
 using pr6.Models.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddHttpClient();
+builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
+builder.Services.AddDirectoryBrowser();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.ConfigureJWTAuthentication(builder.Configuration);
+builder.Services.RegisterExecutingAsseblyServices();
+builder.Services.AddDbContext<ApplicationContext>(config =>
+{
+    config.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionStringMSSQL"));
+});
 
 builder.Services.Configure<MailOptions>(builder.Configuration.GetSection(nameof(MailOptions)));
 builder.Services.Configure<RandomOptions>(builder.Configuration.GetSection(nameof(RandomOptions)));
-builder.Services.Configure<JWTOptions>(builder.Configuration.GetSection(nameof(RandomOptions)));
+builder.Services.Configure<JWTOptions>(builder.Configuration.GetSection(nameof(JWTOptions)));
 builder.Services.Configure<CaptchaOptions>(builder.Configuration.GetSection(nameof(CaptchaOptions)));
 
-builder.Services.ConfigureJWTAuthentication();
-
-builder.Services.RegisterExecutingAsseblyServices();
-
 var app = builder.Build();
+
+app.UseStaticFiles();
 
 app.UseExceptionHandling();
 
@@ -26,5 +37,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapFallbackToFile("Index.html");
 
 app.Run();

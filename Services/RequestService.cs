@@ -1,10 +1,11 @@
 ﻿using System.Text;
 using Microsoft.Extensions.Caching.Memory;
+using pr6.Interfaces;
 using pr6.Models;
 
 namespace pr6.Services
 {
-    public class RequestService
+    public class RequestService : IRequestService
     {
         IMemoryCache _memoryCache;
         IHttpClientFactory _httpClientFactory;
@@ -17,7 +18,7 @@ namespace pr6.Services
             _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task SaveRequestInCacheAsync(HttpContext context)
+        public async Task<string> SaveRequestInCacheAsync(HttpContext context, CancellationToken cancellationToken)
         {
             var requestId = Guid.NewGuid().ToString();
 
@@ -39,7 +40,7 @@ namespace pr6.Services
                     bufferSize: 1024,
                     leaveOpen: true);
 
-                body = await reader.ReadToEndAsync();
+                body = await reader.ReadToEndAsync(cancellationToken);
                 context.Request.Body.Position = 0;
             }
 
@@ -50,6 +51,8 @@ namespace pr6.Services
                 QueryString = context.Request.QueryString.ToString(),
                 Body = body,
                 ContentType = context.Request.ContentType,
+                Scheme = context.Request.Scheme,
+                Host = context.Request.Host.ToString()
             };
             
             foreach(var header in context.Request.Headers)
@@ -57,9 +60,10 @@ namespace pr6.Services
                     requestData.Headers[header.Key] = header.Value.ToString();
 
             _memoryCache.Set($"captcha_request_{requestId}", requestData, TimeSpan.FromMinutes(10));
+            return requestId;
         }
 
-        public Task<HttpContextData> GetRequestFromCacheAsync(string requestId)
+        public Task<HttpContextData> GetRequestFromCacheAsync(string requestId, CancellationToken cancellationToken)
         {
             var cacheKey = $"captcha_request_{requestId}";
 
@@ -71,19 +75,23 @@ namespace pr6.Services
 
             throw new KeyNotFoundException("Request was not found in the cache or timeout period has expired");
         }
-        public async Task ExecuteCachedRequestAsync(string requestId, HttpContext currentContext)
+        public async Task ExecuteCachedRequestAsync(string requestId, HttpContext currentContext, CancellationToken cancellationToken)
         {
-            var requestData = await GetRequestFromCacheAsync(requestId);
+            var requestData = await GetRequestFromCacheAsync(requestId, cancellationToken);
 
             using var httpClient = _httpClientFactory.CreateClient("captcha");
 
+            var requestUri = $"{requestData.Scheme}://{requestData.Host}{requestData.Path}{requestData.QueryString}";
+
             var requestMessage = new HttpRequestMessage(
                 new HttpMethod(requestData.Method),
-                $"{requestData.Path}{requestData.QueryString}");
+                requestUri);
 
-            foreach(var header in requestData.Headers)
+            foreach (var header in requestData.Headers)
                 if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value))
                     requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value);
+
+            requestMessage.Headers.Add("is-server", "true");
 
             if (!string.IsNullOrEmpty(requestData.Body))
             {
@@ -91,7 +99,7 @@ namespace pr6.Services
                 requestMessage.Content = new StringContent(requestData.Body, Encoding.UTF8, mediaType);
             }
 
-            var response = await httpClient.SendAsync(requestMessage);
+            var response = await httpClient.SendAsync(requestMessage, cancellationToken);
 
             currentContext.Response.StatusCode = (int)response.StatusCode;
 
@@ -101,8 +109,8 @@ namespace pr6.Services
             foreach (var header in response.Content.Headers)
                 currentContext.Response.Headers[header.Key] = header.Value.ToArray();
 
-            var responseBody = await response.Content.ReadAsStringAsync();
-            await currentContext.Response.WriteAsync(responseBody);
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            await currentContext.Response.WriteAsync(responseBody, cancellationToken);
         }
     }
 }

@@ -8,5 +8,7 @@
         public Dictionary<string, string> Headers { get; set; } = new();
         public string? Body { get; set; }
         public string? ContentType { get; set; }
+        public string Scheme { get; set; } = string.Empty;
+        public string Host { get; set; } = string.Empty;
     }
 }

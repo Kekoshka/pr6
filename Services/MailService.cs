@@ -19,7 +19,7 @@ namespace pr6.Services
             _mailOptions = mailOptions.Value;
         }
 
-        public async Task SendMailAsync(string email, string subject, string message)
+        public async Task SendMailAsync(string email, string subject, string message, CancellationToken cancellationToken)
         {
             var mailMessage = new MimeMessage();
 
@@ -32,10 +32,10 @@ namespace pr6.Services
             {
                 client.LocalDomain = _mailOptions.LocalDomain;
 
-                await client.ConnectAsync(_mailOptions.MailServerAddress, Convert.ToInt32(_mailOptions.MailServerPort), SecureSocketOptions.Auto).ConfigureAwait(false);
-                await client.AuthenticateAsync(new NetworkCredential(_mailOptions.UserId, _mailOptions.UserPassword));
-                await client.SendAsync(mailMessage).ConfigureAwait(false);
-                await client.DisconnectAsync(true).ConfigureAwait(false);
+                await client.ConnectAsync(_mailOptions.MailServerAddress, Convert.ToInt32(_mailOptions.MailServerPort), SecureSocketOptions.Auto, cancellationToken).ConfigureAwait(false);
+                await client.AuthenticateAsync(new NetworkCredential(_mailOptions.UserId, _mailOptions.UserPassword),cancellationToken);
+                await client.SendAsync(mailMessage, cancellationToken).ConfigureAwait(false);
+                await client.DisconnectAsync(true, cancellationToken).ConfigureAwait(false);
             }
         }
     }
