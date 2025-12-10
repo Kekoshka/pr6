@@ -50,8 +50,25 @@ namespace pr6.Services
             if (!isUserExists) throw new ForbiddenException("Invalid code");
 
             await _context.Users.AddAsync(newUser);
+            await _context.SaveChangesAsync();
         }
-
-
+        public async Task StartRecoverPasswordAsync(string mail)
+        {
+            var tempCode = _randomService.GenerateTempCode();
+            _memoryCache.Set("RecoverPassword_" + mail, tempCode);
+            await _mailService.SendMailAsync(mail, "Восстановление пароля", $"Ваш код для восстановления пароля: {tempCode}");
+        }
+        public async Task EndRecoverPasswordAsync(string mail, string code, string newPassword)
+        {
+            var isGet = _memoryCache.TryGetValue("RecoverPassword_" + mail, out string tempCode);
+            if (!isGet) throw new ForbiddenException("Invalid mail address");
+            
+            if (tempCode != code) throw new ForbiddenException("Invalid code");
+            
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Mail == mail);
+            if (user is null) throw new ForbiddenException("Invalid mail address");
+            user.PasswordHash = _hashService.Hash(newPassword);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -14,20 +14,23 @@ namespace pr6.Services
         IMemoryCache _cache;
         IRandomService _randomService;
         IMailService _mailService;
+        ITokenService _tokenService;
         public AuthenticationService(ApplicationContext context,
             IHashService hashService,
             IMemoryCache cache,
             IRandomService randomService,
-            IMailService mailService)
+            IMailService mailService,
+            ITokenService tokenService)
         {
             _context = context;
             _hashService = hashService;
             _cache = cache;
             _randomService = randomService;
             _mailService = mailService;
+            _tokenService = tokenService;
         }
 
-        public async Task<Guid> StartAuthenticate(UserCredentialsDTO userCredentials)
+        public async Task StartAuthenticate(UserCredentialsDTO userCredentials)
         {
             var existsUser = await _context.Users.FirstOrDefaultAsync(u => u.Mail == userCredentials.Mail);
             if (existsUser is null) throw new UnauthorizedException("User with this credentials not found");
@@ -36,13 +39,19 @@ namespace pr6.Services
             if (!passwordIsValid) throw new UnauthorizedException("User with this credentials not found");
 
             var code = _randomService.GenerateTempCode();
-            await _mailService.SendMailAsync(userCredentials.Mail, "Код для подтверждения авторизации", $"Ваш код для подтверждения авторизации: {code}.");
+            await _mailService.SendMailAsync(userCredentials.Mail, "Подтверждение авторизации", $"Ваш код для подтверждения авторизации: {code}.");
 
             _cache.Set("Authenticate_" + userCredentials.Mail, code);
         }
-        public async Task<string> EndAuthenticate(string mail, string verifyCode)
+        public async Task<TokenPairDTO> EndAuthenticate(string mail, string verifyCode)
         {
             var isGet = _cache.TryGetValue("Authenticate_" + mail, out string code);
+            if (!isGet) throw new ForbiddenException("User with this credentials not found");
+
+            if (code != verifyCode) throw new ForbiddenException("Invalid code");
+
+            var user = _context.Users.Single(u => u.Mail == mail);
+            return _tokenService.GetJWTPair(user);
 
 
         }
