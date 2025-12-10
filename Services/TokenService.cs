@@ -23,6 +23,10 @@ namespace pr6.Services
                 AccessToken = GenerateAccessToken(user),
                 RefreshToken = GenerateRefreshToken(user)
             };
+        public TokenPairDTO GetJWTPairByRefresh(string refreshToken)
+        {
+
+        }
         private string GenerateAccessToken(User user)
         {
             List<Claim> claims = new List<Claim>

@@ -16,16 +16,64 @@ namespace pr6.Common.Extensions
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
-                options.TokenValidationParameters = new TokenValidationParameters
                 {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
 
-                    ValidateIssuer = true,
-                    ValidIssuer = JWToptions.Issuer,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWToptions.Key)),
-                    AudienceValidator = (audiences, securityToken, validationParameters) =>
-                        ValidateAudience(services, audiences)
+                        ValidateIssuer = true,
+                        ValidIssuer = JWToptions.Issuer,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWToptions.AccessKey)),
+                        AudienceValidator = (audiences, securityToken, validationParameters) =>
+                            ValidateAudience(services, audiences)
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = context =>
+                        {
+                            var tokenType = context.Principal?.FindFirst("token_type")?.Value;
+                            if (tokenType != "access")
+                            {
+                                context.Fail("Invalid token type. Access token required.");
+                            }
+                            return Task.CompletedTask;
+                        },
+                        OnAuthenticationFailed = context =>
+                        {
+                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                            {
+                                context.Response.Headers.Add("Token-Expired", "true");
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                })
+                .AddJwtBearer("RefreshToken", options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+
+                        ValidateIssuer = true,
+                        ValidIssuer = JWToptions.Issuer,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWToptions.RefreshKey)),
+                        AudienceValidator = (audiences, securityToken, validationParameters) =>
+                            ValidateAudience(services, audiences)
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = context =>
+                        {
+                            var tokenType = context.Principal?.FindFirst("token_type")?.Value;
+                            if (tokenType != "refresh")
+                            {
+                                context.Fail("Invalid token type. Refresh token required.");
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
         }
         private static bool ValidateAudience(IServiceCollection services, IEnumerable<string> audiences)
@@ -33,6 +81,32 @@ namespace pr6.Common.Extensions
             using var scope = services.BuildServiceProvider().CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
             return dbContext.Users.Any(u => u.Id.ToString() == audiences.FirstOrDefault());
+        }
+        private static void ConfigureRefreshTokenValidation(JwtBearerOptions options, JWTOptions jwtOptions)
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+
+                ValidateIssuer = true,
+                ValidIssuer = jwtOptions.Issuer,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWToptions.RefreshKey)),
+                AudienceValidator = (audiences, securityToken, validationParameters) =>
+                    ValidateAudience(services, audiences)
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = context =>
+                {
+                    var tokenType = context.Principal?.FindFirst("token_type")?.Value;
+                    if (tokenType != "refresh")
+                    {
+                        context.Fail("Invalid token type. Refresh token required.");
+                    }
+                    return Task.CompletedTask;
+                }
+            };
         }
     }
 }
