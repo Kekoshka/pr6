@@ -109,8 +109,11 @@ namespace pr6.Services
             foreach (var header in response.Content.Headers)
                 currentContext.Response.Headers[header.Key] = header.Value.ToArray();
 
-            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-            await currentContext.Response.WriteAsync(responseBody, cancellationToken);
+            if(response.StatusCode != System.Net.HttpStatusCode.NoContent)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                await currentContext.Response.WriteAsync(responseBody, cancellationToken);
+            }
         }
     }
 }

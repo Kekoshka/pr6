@@ -28,9 +28,14 @@ namespace pr6.Controllers
             _context = context;
         }
         [HttpPost("StartAuthenticationAsync")]
-        public async Task<IActionResult> StartAuthenticationAsync(UserCredentialsDTO userCredentials, CancellationToken cancellationToken)
+        public async Task<IActionResult> StartAuthenticationAsync(string mail, string password, CancellationToken cancellationToken)
         {
-            await _authenticationService.StartAuthenticateAsync(userCredentials, cancellationToken);
+            UserCredentialsDTO uc = new()
+            {
+                Mail = mail,
+                Password = password
+            };
+            await _authenticationService.StartAuthenticateAsync(uc, cancellationToken);
             return NoContent();
         }
         [HttpPost("EndAuthenticationAsync")]

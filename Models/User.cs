@@ -5,6 +5,6 @@
         public Guid Id { get; set; }
         public string Mail { get; set; }
         public string PasswordHash { get; set; }
-        public string CodeHash { get; set; }
+        public string? CodeHash { get; set; }
     }
 }

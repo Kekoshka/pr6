@@ -30,7 +30,7 @@ app.UseStaticFiles();
 
 app.UseExceptionHandling();
 
-app.UseCaptcha();
+//app.UseCaptcha();
 
 app.UseHttpsRedirection();
 
