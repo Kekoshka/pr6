@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient();
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.AddDirectoryBrowser();
@@ -26,18 +27,19 @@ builder.Services.Configure<CaptchaOptions>(builder.Configuration.GetSection(name
 
 var app = builder.Build();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseStaticFiles();
 
 app.UseExceptionHandling();
 
-//app.UseCaptcha();
+app.UseCaptcha();
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseSwagger().UseSwaggerUI();
 
 app.MapControllers();
-
-app.MapFallbackToFile("Index.html");
 
 app.Run();

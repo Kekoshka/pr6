@@ -28,14 +28,9 @@ namespace pr6.Controllers
             _context = context;
         }
         [HttpPost("StartAuthenticationAsync")]
-        public async Task<IActionResult> StartAuthenticationAsync(string mail, string password, CancellationToken cancellationToken)
+        public async Task<IActionResult> StartAuthenticationAsync(UserCredentialsDTO userCredentials, CancellationToken cancellationToken)
         {
-            UserCredentialsDTO uc = new()
-            {
-                Mail = mail,
-                Password = password
-            };
-            await _authenticationService.StartAuthenticateAsync(uc, cancellationToken);
+            await _authenticationService.StartAuthenticateAsync(userCredentials, cancellationToken);
             return NoContent();
         }
         [HttpPost("EndAuthenticationAsync")]
@@ -46,9 +41,9 @@ namespace pr6.Controllers
         }
         [HttpGet("GetNewTokenPairAsync")]
         [Authorize(policy:"RefreshTokenOnly")]
-        public async Task<IActionResult> GetNewTokenPairAsync(string refreshToken, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetNewTokenPairAsync(CancellationToken cancellationToken)
         {
-            var userMail = HttpContext.User.FindFirstValue(ClaimTypes.Email);
+            var userMail = HttpContext.User.FindFirstValue(ClaimTypes.Name);
             if (userMail is null) return Forbid("Invalid token");
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Mail == userMail, cancellationToken);

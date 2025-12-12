@@ -3,838 +3,329 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Аутентификация с JWT и капчей</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-        }
-
-            .header h1 {
-                font-size: 24px;
-                font-weight: 600;
-                margin-bottom: 10px;
-            }
-
-            .header p {
-                opacity: 0.9;
-                font-size: 14px;
-            }
-
-        .tabs {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 500;
-            color: #6c757d;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-        }
-
-            .tab.active {
-                color: #667eea;
-                border-bottom: 3px solid #667eea;
-                background: white;
-            }
-
-        .content {
-            padding: 30px;
-        }
-
-        .form {
-            display: none;
-        }
-
-            .form.active {
-                display: block;
-            }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-            .form-group label {
-                display: block;
-                margin-bottom: 8px;
-                font-weight: 500;
-                color: #495057;
-                font-size: 14px;
-            }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-            .form-control:focus {
-                outline: none;
-                border-color: #667eea;
-            }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-            .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
-            }
-
-            .btn:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-                transform: none;
-                box-shadow: none;
-            }
-
-        .message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            display: none;
-        }
-
-            .message.success {
-                background: #d4edda;
-                color: #155724;
-                border: 1px solid #c3e6cb;
-                display: block;
-            }
-
-            .message.error {
-                background: #f8d7da;
-                color: #721c24;
-                border: 1px solid #f5c6cb;
-                display: block;
-            }
-
-            .message.info {
-                background: #d1ecf1;
-                color: #0c5460;
-                border: 1px solid #bee5eb;
-                display: block;
-            }
-
-        .captcha-container {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .captcha-image {
-            margin-bottom: 15px;
-            border-radius: 5px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
-
-        .step {
-            display: none;
-        }
-
-            .step.active {
-                display: block;
-            }
-
-        .token-display {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            word-break: break-all;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.5;
-            border: 1px solid #e9ecef;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 15px;
-            color: #667eea;
-            text-decoration: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-            .back-link:hover {
-                text-decoration: underline;
-            }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
+    <title>Аутентификация</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Аутентификация</h1>
-            <p>Регистрация, вход и восстановление пароля</p>
+            <h1><i class="fas fa-user-shield"></i> Система аутентификации</h1>
+            <div class="auth-status" id="authStatus">
+                Не авторизован
+            </div>
         </div>
 
         <div class="tabs">
-            <div class="tab active" data-tab="login">Вход</div>
-            <div class="tab" data-tab="register">Регистрация</div>
-            <div class="tab" data-tab="recover">Восстановление</div>
+            <button class="tab active" data-tab="auth">Авторизация</button>
+            <button class="tab" data-tab="register">Регистрация</button>
+            <button class="tab" data-tab="recover">Восстановление</button>
+            <button class="tab" data-tab="tokens">Токены</button>
         </div>
 
-        <div class="content">
-            <!-- Форма входа -->
-            <div id="login-form" class="form active">
-                <div id="login-step1" class="step active">
+        <!-- Авторизация -->
+        <div class="tab-content active" id="authTab">
+            <div class="form-step active" id="authStep1">
+                <h2><i class="fas fa-sign-in-alt"></i> Вход в систему</h2>
+                <form id="authForm">
                     <div class="form-group">
-                        <label for="login-email">Email</label>
-                        <input type="email" id="login-email" class="form-control" placeholder="Введите email">
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">Пароль</label>
-                        <input type="password" id="login-password" class="form-control" placeholder="Введите пароль">
-                    </div>
-                    <button id="login-start-btn" class="btn" onclick="startLogin()">
-                        <span class="btn-text">Войти</span>
-                    </button>
-                    <div id="login-message" class="message"></div>
-                </div>
-
-                <div id="login-step2" class="step">
-                    <div class="form-group">
-                        <label>Введите код подтверждения из email</label>
-                        <input type="text" id="login-code" class="form-control" placeholder="Код подтверждения">
-                    </div>
-                    <button id="login-end-btn" class="btn" onclick="endLogin()">
-                        <span class="btn-text">Подтвердить</span>
-                    </button>
-                    <div id="login-step2-message" class="message"></div>
-                    <a class="back-link" onclick="showLoginStep(1)">← Назад</a>
-                </div>
-
-                <div id="login-step3" class="step">
-                    <div class="message success">
-                        ✅ Авторизация успешна!
+                        <label for="authEmail">Email:</label>
+                        <input type="email" id="authEmail" required>
                     </div>
                     <div class="form-group">
-                        <label>Ваш Access Token:</label>
-                        <div id="access-token" class="token-display"></div>
-                    </div>
-                    <div class="form-group">
-                        <label>Refresh Token:</label>
-                        <div id="refresh-token" class="token-display"></div>
-                    </div>
-                    <div class="form-group">
-                        <button class="btn" onclick="refreshToken()" style="margin-top: 10px;">
-                            <span class="btn-text">Обновить токен</span>
-                        </button>
-                    </div>
-                    <a class="back-link" onclick="showLoginStep(1)">← Выйти</a>
-                </div>
-            </div>
-
-            <!-- Форма регистрации -->
-            <div id="register-form" class="form">
-                <div id="register-step1" class="step active">
-                    <div class="form-group">
-                        <label for="register-email">Email</label>
-                        <input type="email" id="register-email" class="form-control" placeholder="Введите email">
-                    </div>
-                    <div class="form-group">
-                        <label for="register-password">Пароль</label>
-                        <input type="password" id="register-password" class="form-control" placeholder="Введите пароль">
-                    </div>
-                    <button id="register-start-btn" class="btn" onclick="startRegistration()">
-                        <span class="btn-text">Зарегистрироваться</span>
-                    </button>
-                    <div id="register-message" class="message"></div>
-                </div>
-
-                <div id="register-step2" class="step">
-                    <div class="form-group">
-                        <label>Введите код подтверждения из email</label>
-                        <input type="text" id="register-code" class="form-control" placeholder="Код подтверждения">
-                    </div>
-                    <button id="register-end-btn" class="btn" onclick="endRegistration()">
-                        <span class="btn-text">Подтвердить регистрацию</span>
-                    </button>
-                    <div id="register-step2-message" class="message"></div>
-                    <a class="back-link" onclick="showRegisterStep(1)">← Назад</a>
-                </div>
-            </div>
-
-            <!-- Форма восстановления -->
-            <div id="recover-form" class="form">
-                <div id="recover-step1" class="step active">
-                    <div class="form-group">
-                        <label for="recover-email">Email</label>
-                        <input type="email" id="recover-email" class="form-control" placeholder="Введите email">
-                    </div>
-                    <button id="recover-start-btn" class="btn" onclick="startRecovery()">
-                        <span class="btn-text">Восстановить пароль</span>
-                    </button>
-                    <div id="recover-message" class="message"></div>
-                </div>
-
-                <div id="recover-step2" class="step">
-                    <div class="form-group">
-                        <label>Введите код подтверждения из email</label>
-                        <input type="text" id="recover-code" class="form-control" placeholder="Код подтверждения">
-                    </div>
-                    <div class="form-group">
-                        <label>Новый пароль</label>
-                        <input type="password" id="recover-new-password" class="form-control" placeholder="Введите новый пароль">
-                    </div>
-                    <button id="recover-end-btn" class="btn" onclick="endRecovery()">
-                        <span class="btn-text">Установить новый пароль</span>
-                    </button>
-                    <div id="recover-step2-message" class="message"></div>
-                    <a class="back-link" onclick="showRecoverStep(1)">← Назад</a>
-                </div>
-            </div>
-
-            <!-- Модальное окно капчи -->
-            <div id="captcha-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; justify-content: center; align-items: center;">
-                <div class="container" style="max-width: 350px;">
-                    <div class="header">
-                        <h3>Требуется подтверждение</h3>
-                    </div>
-                    <div class="content">
-                        <div class="captcha-container">
-                            <p style="margin-bottom: 15px;">Пожалуйста, введите текст с картинки для продолжения</p>
-                            <img id="captcha-img" class="captcha-image" src="" alt="Капча" style="width: 100%; height: auto;">
-                            <input type="text" id="captcha-input" class="form-control" placeholder="Введите текст с картинки" style="margin-bottom: 10px;">
-                            <input type="hidden" id="captcha-request-id">
-                            <button class="btn" onclick="submitCaptcha()" style="margin-bottom: 10px;">
-                                <span class="btn-text">Подтвердить</span>
-                            </button>
-                            <button class="btn" onclick="refreshCaptcha()" style="background: #6c757d;">
-                                <span class="btn-text">Обновить капчу</span>
+                        <label for="authPassword">Пароль:</label>
+                        <div class="password-input">
+                            <input type="password" id="authPassword" required>
+                            <button type="button" class="toggle-password" data-target="authPassword">
+                                <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Войти
+                    </button>
+                </form>
+            </div>
+
+            <div class="form-step" id="authStep2">
+                <h2><i class="fas fa-envelope"></i> Подтверждение входа</h2>
+                <p>На вашу почту отправлен код подтверждения</p>
+                <form id="authCodeForm">
+                    <div class="form-group">
+                        <label for="authCode">Код из письма:</label>
+                        <input type="text" id="authCode" maxlength="6" required>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-check"></i> Подтвердить
+                    </button>
+                    <button type="button" class="btn-secondary" id="backToAuth">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Регистрация -->
+        <div class="tab-content" id="registerTab">
+            <div class="form-step active" id="registerStep1">
+                <h2><i class="fas fa-user-plus"></i> Регистрация</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="registerEmail">Email:</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Пароль:</label>
+                        <div class="password-input">
+                            <input type="password" id="registerPassword" required>
+                            <button type="button" class="toggle-password" data-target="registerPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-rules">
+                            <p>Пароль должен содержать:</p>
+                            <ul>
+                                <li id="rule-length">✓ Минимум 8 символов</li>
+                                <li id="rule-uppercase">✓ Заглавную букву</li>
+                                <li id="rule-lowercase">✓ Строчную букву</li>
+                                <li id="rule-special">✓ Специальный символ</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerConfirmPassword">Подтвердите пароль:</label>
+                        <div class="password-input">
+                            <input type="password" id="registerConfirmPassword" required>
+                            <button type="button" class="toggle-password" data-target="registerConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-match" id="passwordMatch">
+                            Пароли совпадают
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Зарегистрироваться
+                    </button>
+                </form>
+            </div>
+
+            <div class="form-step" id="registerStep2">
+                <h2><i class="fas fa-envelope"></i> Подтверждение регистрации</h2>
+                <p>На вашу почту отправлен код подтверждения</p>
+                <form id="registerCodeForm">
+                    <div class="form-group">
+                        <label for="registerCode">Код из письма:</label>
+                        <input type="text" id="registerCode" maxlength="6" required>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-check"></i> Подтвердить
+                    </button>
+                    <button type="button" class="btn-secondary" id="backToRegister">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Восстановление пароля -->
+        <div class="tab-content" id="recoverTab">
+            <div class="form-step active" id="recoverStep1">
+                <h2><i class="fas fa-key"></i> Восстановление пароля</h2>
+                <form id="recoverForm">
+                    <div class="form-group">
+                        <label for="recoverEmail">Email:</label>
+                        <input type="email" id="recoverEmail" required>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Отправить код
+                    </button>
+                </form>
+            </div>
+
+            <div class="form-step" id="recoverStep2">
+                <h2><i class="fas fa-key"></i> Смена пароля</h2>
+                <p>На вашу почту отправлен код подтверждения</p>
+                <form id="recoverCodeForm">
+                    <div class="form-group">
+                        <label for="recoverCode">Код из письма:</label>
+                        <input type="text" id="recoverCode" maxlength="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Новый пароль:</label>
+                        <div class="password-input">
+                            <input type="password" id="newPassword" required>
+                            <button type="button" class="toggle-password" data-target="newPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Подтвердите пароль:</label>
+                        <div class="password-input">
+                            <input type="password" id="confirmNewPassword" required>
+                            <button type="button" class="toggle-password" data-target="confirmNewPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-sync-alt"></i> Сменить пароль
+                    </button>
+                    <button type="button" class="btn-secondary" id="backToRecover">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Управление токенами -->
+        <div class="tab-content" id="tokensTab">
+            <h2><i class="fas fa-key"></i> Управление токенами</h2>
+            <div class="token-info">
+                <h3>Refresh токен</h3>
+                <div class="token-display" id="refreshTokenDisplay">
+                    Токен не сохранен
+                </div>
+                <div class="token-actions">
+                    <button class="btn-secondary" id="refreshAccessToken">
+                        <i class="fas fa-sync"></i> Обновить Access токен
+                    </button>
+                    <button class="btn-danger" id="clearTokens">
+                        <i class="fas fa-trash"></i> Очистить токены
+                    </button>
+                </div>
+                <div class="token-result" id="tokenResult"></div>
+            </div>
+        </div>
+
+        <!-- Модальное окно капчи -->
+        <div class="modal" id="captchaModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-robot"></i> Подтвердите, что вы не робот</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="captcha-image">
+                        <img id="captchaImg" alt="Капча">
+                    </div>
+                    <div class="form-group">
+                        <label for="captchaInput">Введите текст с картинки:</label>
+                        <input type="text" id="captchaInput" required>
+                    </div>
+                    <div class="captcha-error" id="captchaError"></div>
+                    <button class="btn-primary" id="submitCaptcha">
+                        <i class="fas fa-check"></i> Подтвердить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Лоадер -->
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Загрузка...</p>
+        </div>
+    </div>
+    <!-- Модальное окно предложения пин-кода -->
+    <div class="modal" id="pinOfferModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-shield-alt"></i> Настройка дополнительной защиты</h2>
+                <button class="close-modal" data-modal="pinOfferModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Хотите установить 4-значный пин-код для быстрого доступа?</p>
+                <p class="small-text">С пин-кодом вы сможете быстро обновлять токены без повторного входа</p>
+                <div class="pin-options">
+                    <button class="btn-primary" id="acceptPin">
+                        <i class="fas fa-check"></i> Да, установить пин-код
+                    </button>
+                    <button class="btn-secondary" id="declinePin">
+                        <i class="fas fa-times"></i> Нет, отказаться
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Текущий активный таб
-        let currentTab = 'login';
-        let pendingCaptchaRequest = null;
-        let captchaData = null;
-
-        // Переключение табов
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.getAttribute('data-tab');
-                switchTab(tabName);
-            });
-        });
-
-        function switchTab(tabName) {
-            // Обновляем активный таб
-            document.querySelectorAll('.tab').forEach(t => {
-                t.classList.toggle('active', t.getAttribute('data-tab') === tabName);
-            });
-
-            // Показываем соответствующую форму
-            document.querySelectorAll('.form').forEach(form => {
-                form.classList.toggle('active', form.id === `${tabName}-form`);
-            });
-
-            // Сбрасываем все шаги к первому
-            resetAllForms();
-            currentTab = tabName;
-        }
-
-        function resetAllForms() {
-            // Сброс формы входа
-            showLoginStep(1);
-            document.getElementById('login-email').value = '';
-            document.getElementById('login-password').value = '';
-            document.getElementById('login-code').value = '';
-            hideMessage('login-message');
-            hideMessage('login-step2-message');
-
-            // Сброс формы регистрации
-            showRegisterStep(1);
-            document.getElementById('register-email').value = '';
-            document.getElementById('register-password').value = '';
-            document.getElementById('register-code').value = '';
-            hideMessage('register-message');
-            hideMessage('register-step2-message');
-
-            // Сброс формы восстановления
-            showRecoverStep(1);
-            document.getElementById('recover-email').value = '';
-            document.getElementById('recover-code').value = '';
-            document.getElementById('recover-new-password').value = '';
-            hideMessage('recover-message');
-            hideMessage('recover-step2-message');
-
-            // Скрыть модальное окно капчи
-            document.getElementById('captcha-modal').style.display = 'none';
-        }
-
-        function showLoginStep(step) {
-            document.getElementById('login-step1').classList.toggle('active', step === 1);
-            document.getElementById('login-step2').classList.toggle('active', step === 2);
-            document.getElementById('login-step3').classList.toggle('active', step === 3);
-        }
-
-        function showRegisterStep(step) {
-            document.getElementById('register-step1').classList.toggle('active', step === 1);
-            document.getElementById('register-step2').classList.toggle('active', step === 2);
-        }
-
-        function showRecoverStep(step) {
-            document.getElementById('recover-step1').classList.toggle('active', step === 1);
-            document.getElementById('recover-step2').classList.toggle('active', step === 2);
-        }
-
-        // Вспомогательные функции для работы с API
-        async function makeRequest(url, method, data = null, requiresCaptcha = true) {
-            const options = {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            };
-
-            if (data) {
-                options.body = JSON.stringify(data);
-            }
-
-            try {
-                const response = await fetch(url, options);
-
-                // Если требуется капча и получили 403
-                if (requiresCaptcha && response.status === 403) {
-                    const captchaResponse = await response.json();
-                    if (captchaResponse.error && captchaResponse.captcha) {
-                        // Сохраняем информацию о запросе и показываем капчу
-                        pendingCaptchaRequest = { url, method, data };
-                        captchaData = {
-                            requestId: captchaResponse.requestId,
-                            image: `data:image/png;base64,${captchaResponse.captcha}`
-                        };
-                        showCaptchaModal();
-                        return null;
-                    }
-                }
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                if (response.status === 204) {
-                    return null; // No Content
-                }
-
-                return await response.json();
-            } catch (error) {
-                console.error('Request error:', error);
-                throw error;
-            }
-        }
-
-        function showMessage(elementId, text, type = 'error') {
-            const element = document.getElementById(elementId);
-            element.textContent = text;
-            element.className = `message ${type}`;
-            element.style.display = 'block';
-        }
-
-        function hideMessage(elementId) {
-            const element = document.getElementById(elementId);
-            element.style.display = 'none';
-        }
-
-        function showLoading(buttonId) {
-            const button = document.getElementById(buttonId);
-            const text = button.querySelector('.btn-text');
-            text.innerHTML = '<div class="loading"></div>Загрузка...';
-            button.disabled = true;
-        }
-
-        function hideLoading(buttonId) {
-            const button = document.getElementById(buttonId);
-            const text = button.querySelector('.btn-text');
-            text.textContent = getButtonText(buttonId);
-            button.disabled = false;
-        }
-
-        function getButtonText(buttonId) {
-            const texts = {
-                'login-start-btn': 'Войти',
-                'login-end-btn': 'Подтвердить',
-                'register-start-btn': 'Зарегистрироваться',
-                'register-end-btn': 'Подтвердить регистрацию',
-                'recover-start-btn': 'Восстановить пароль',
-                'recover-end-btn': 'Установить новый пароль'
-            };
-            return texts[buttonId] || 'Подтвердить';
-        }
-
-        // Функции для работы с капчей
-        function showCaptchaModal() {
-            if (captchaData) {
-                document.getElementById('captcha-img').src = captchaData.image;
-                document.getElementById('captcha-request-id').value = captchaData.requestId;
-                document.getElementById('captcha-modal').style.display = 'flex';
-            }
-        }
-
-        function hideCaptchaModal() {
-            document.getElementById('captcha-modal').style.display = 'none';
-            document.getElementById('captcha-input').value = '';
-        }
-
-        async function submitCaptcha() {
-            const code = document.getElementById('captcha-input').value;
-            const requestId = document.getElementById('captcha-request-id').value;
-
-            if (!code) {
-                alert('Пожалуйста, введите текст с картинки');
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/Captcha/VerifyCaptcha?requestId=${encodeURIComponent(requestId)}&code=${encodeURIComponent(code)}`, {
-                    method: 'POST'
-                });
-
-                if (response.ok) {
-                    // Капча успешно пройдена, скрываем модальное окно
-                    hideCaptchaModal();
-
-                    // Обрабатываем успешный ответ
-                    handleCaptchaSuccess();
-                } else {
-                    const errorText = await response.text();
-                    alert(`Неверный код капчи: ${errorText}`);
-                    refreshCaptcha();
-                }
-            } catch (error) {
-                console.error('Captcha verification error:', error);
-                alert('Ошибка при проверке капчи');
-            }
-        }
-
-        function refreshCaptcha() {
-            hideCaptchaModal();
-
-            // Повторяем исходный запрос для получения новой капчи
-            if (pendingCaptchaRequest) {
-                // Сбросим данные капчи
-                captchaData = null;
-
-                // Повторяем запрос
-                makeRequest(
-                    pendingCaptchaRequest.url,
-                    pendingCaptchaRequest.method,
-                    pendingCaptchaRequest.data
-                );
-            }
-        }
-
-        function handleCaptchaSuccess() {
-            // Обработка успешного прохождения капчи
-            switch (currentTab) {
-                case 'login':
-                    showMessage('login-message', 'Код подтверждения отправлен на email', 'success');
-                    showLoginStep(2);
-                    break;
-                case 'register':
-                    showMessage('register-message', 'Код подтверждения отправлен на email', 'success');
-                    showRegisterStep(2);
-                    break;
-                case 'recover':
-                    showMessage('recover-message', 'Код подтверждения отправлен на email', 'success');
-                    showRecoverStep(2);
-                    break;
-            }
-        }
-
-        // Функции аутентификации
-        async function startLogin() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            if (!email || !password) {
-                showMessage('login-message', 'Пожалуйста, заполните все поля', 'error');
-                return;
-            }
-
-            showLoading('login-start-btn');
-
-            try {
-                await makeRequest('/api/AuthenticationController/StartAuthenticationAsync', 'POST', {
-                    mail: email,
-                    password: password
-                });
-
-                // Если не потребовалась капча, показываем следующий шаг
-                if (!captchaData) {
-                    showMessage('login-message', 'Код подтверждения отправлен на email', 'success');
-                    showLoginStep(2);
-                }
-            } catch (error) {
-                showMessage('login-message', 'Ошибка при входе: ' + error.message, 'error');
-            } finally {
-                hideLoading('login-start-btn');
-            }
-        }
-
-        async function endLogin() {
-            const email = document.getElementById('login-email').value;
-            const code = document.getElementById('login-code').value;
-
-            if (!code) {
-                showMessage('login-step2-message', 'Пожалуйста, введите код подтверждения', 'error');
-                return;
-            }
-
-            showLoading('login-end-btn');
-
-            try {
-                const tokenPair = await makeRequest(`/api/AuthenticationController/EndAuthenticationAsync?mail=${encodeURIComponent(email)}&verifyCode=${encodeURIComponent(code)}`, 'POST', null, false);
-
-                if (tokenPair) {
-                    // Сохраняем токены
-                    localStorage.setItem('access_token', tokenPair.accessToken);
-                    localStorage.setItem('refresh_token', tokenPair.refreshToken);
-
-                    // Показываем токены
-                    document.getElementById('access-token').textContent = tokenPair.accessToken;
-                    document.getElementById('refresh-token').textContent = tokenPair.refreshToken;
-                    showLoginStep(3);
-                }
-            } catch (error) {
-                showMessage('login-step2-message', 'Ошибка при подтверждении: ' + error.message, 'error');
-            } finally {
-                hideLoading('login-end-btn');
-            }
-        }
-
-        // Функции регистрации
-        async function startRegistration() {
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-
-            if (!email || !password) {
-                showMessage('register-message', 'Пожалуйста, заполните все поля', 'error');
-                return;
-            }
-
-            showLoading('register-start-btn');
-
-            try {
-                await makeRequest('/api/RegistrationService/StartRegistrationAsync', 'POST', {
-                    mail: email,
-                    password: password
-                });
-
-                if (!captchaData) {
-                    showMessage('register-message', 'Код подтверждения отправлен на email', 'success');
-                    showRegisterStep(2);
-                }
-            } catch (error) {
-                showMessage('register-message', 'Ошибка при регистрации: ' + error.message, 'error');
-            } finally {
-                hideLoading('register-start-btn');
-            }
-        }
-
-        async function endRegistration() {
-            const code = document.getElementById('register-code').value;
-
-            if (!code) {
-                showMessage('register-step2-message', 'Пожалуйста, введите код подтверждения', 'error');
-                return;
-            }
-
-            showLoading('register-end-btn');
-
-            try {
-                await makeRequest(`/api/RegistrationService/EndRegistrationAsync?code=${encodeURIComponent(code)}`, 'POST', null, false);
-
-                showMessage('register-step2-message', 'Регистрация успешно завершена!', 'success');
-                setTimeout(() => {
-                    switchTab('login');
-                }, 2000);
-            } catch (error) {
-                showMessage('register-step2-message', 'Ошибка при подтверждении: ' + error.message, 'error');
-            } finally {
-                hideLoading('register-end-btn');
-            }
-        }
-
-        // Функции восстановления пароля
-        async function startRecovery() {
-            const email = document.getElementById('recover-email').value;
-
-            if (!email) {
-                showMessage('recover-message', 'Пожалуйста, введите email', 'error');
-                return;
-            }
-
-            showLoading('recover-start-btn');
-
-            try {
-                await makeRequest(`/api/RecoverController/StartRecoverPasswordAsync?mail=${encodeURIComponent(email)}`, 'POST', null);
-
-                if (!captchaData) {
-                    showMessage('recover-message', 'Код подтверждения отправлен на email', 'success');
-                    showRecoverStep(2);
-                }
-            } catch (error) {
-                showMessage('recover-message', 'Ошибка при запросе восстановления: ' + error.message, 'error');
-            } finally {
-                hideLoading('recover-start-btn');
-            }
-        }
-
-        async function endRecovery() {
-            const email = document.getElementById('recover-email').value;
-            const code = document.getElementById('recover-code').value;
-            const newPassword = document.getElementById('recover-new-password').value;
-
-            if (!code || !newPassword) {
-                showMessage('recover-step2-message', 'Пожалуйста, заполните все поля', 'error');
-                return;
-            }
-
-            showLoading('recover-end-btn');
-
-            try {
-                await makeRequest(`/api/RecoverController/EndRecoverPasswordAsync?mail=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}&newPassword=${encodeURIComponent(newPassword)}`, 'POST', null, false);
-
-                showMessage('recover-step2-message', 'Пароль успешно изменен!', 'success');
-                setTimeout(() => {
-                    switchTab('login');
-                }, 2000);
-            } catch (error) {
-                showMessage('recover-step2-message', 'Ошибка при смене пароля: ' + error.message, 'error');
-            } finally {
-                hideLoading('recover-end-btn');
-            }
-        }
-
-        // Обновление токена
-        async function refreshToken() {
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (!refreshToken) {
-                alert('Refresh токен не найден. Пожалуйста, войдите снова.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/AuthenticationController/GetNewTokenPairAsync?refreshToken=${encodeURIComponent(refreshToken)}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${refreshToken}`
-                    }
-                });
-
-                if (response.ok) {
-                    const tokenPair = await response.json();
-                    localStorage.setItem('access_token', tokenPair.accessToken);
-                    localStorage.setItem('refresh_token', tokenPair.refreshToken);
-
-                    // Обновляем отображение токенов
-                    document.getElementById('access-token').textContent = tokenPair.accessToken;
-                    document.getElementById('refresh-token').textContent = tokenPair.refreshToken;
-
-                    showMessage('login-step3', 'Токены успешно обновлены!', 'success');
-                    setTimeout(() => {
-                        hideMessage('login-step3');
-                    }, 3000);
-                } else {
-                    const errorText = await response.text();
-                    alert(`Ошибка при обновлении токена: ${errorText}`);
-                }
-            } catch (error) {
-                console.error('Token refresh error:', error);
-                alert('Ошибка при обновлении токена: ' + error.message);
-            }
-        }
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            // Проверяем, есть ли сохраненные токены
-            const accessToken = localStorage.getItem('access_token');
-            if (accessToken) {
-                document.getElementById('access-token').textContent = accessToken;
-                document.getElementById('refresh-token').textContent = localStorage.getItem('refresh_token') || '';
-                showLoginStep(3);
-            }
-        });
-    </script>
+    <!-- Модальное окно установки пин-кода -->
+    <div class="modal" id="pinSetupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-lock"></i> Установка пин-кода</h2>
+                <button class="close-modal" data-modal="pinSetupModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Придумайте 4-значный пин-код (только цифры):</p>
+                <div class="pin-input-container">
+                    <input type="password" id="pinInput1" maxlength="1" pattern="[0-9]" class="pin-digit">
+                    <input type="password" id="pinInput2" maxlength="1" pattern="[0-9]" class="pin-digit">
+                    <input type="password" id="pinInput3" maxlength="1" pattern="[0-9]" class="pin-digit">
+                    <input type="password" id="pinInput4" maxlength="1" pattern="[0-9]" class="pin-digit">
+                </div>
+                <div class="pin-error" id="pinError"></div>
+                <button class="btn-primary" id="savePin">
+                    <i class="fas fa-save"></i> Сохранить пин-код
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно ввода пин-кода -->
+    <div class="modal" id="pinVerifyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-unlock-alt"></i> Введите пин-код</h2>
+                <button class="close-modal" data-modal="pinVerifyModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Для обновления токена введите ваш 4-значный пин-код:</p>
+                <div class="pin-input-container">
+                    <input type="password" id="pinVerify1" maxlength="1" pattern="[0-9]" class="pin-digit">
+                    <input type="password" id="pinVerify2" maxlength="1" pattern="[0-9]" class="pin-digit">
+                    <input type="password" id="pinVerify3" maxlength="1" pattern="[0-9]" class="pin-digit">
+                    <input type="password" id="pinVerify4" maxlength="1" pattern="[0-9]" class="pin-digit">
+                </div>
+                <div class="pin-error" id="pinVerifyError"></div>
+                <div class="pin-options">
+                    <button class="btn-primary" id="verifyPin">
+                        <i class="fas fa-check"></i> Подтвердить
+                    </button>
+                    <button class="btn-secondary" id="cancelPin">
+                        <i class="fas fa-sign-in-alt"></i> Войти заново
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно отображения токена -->
+    <div class="modal" id="tokenDisplayModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-key"></i> Ваш Refresh Token</h2>
+                <button class="close-modal" data-modal="tokenDisplayModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Вы отказались от сохранения пин-кода. Ваш refresh token:</p>
+                <div class="token-display-modal" id="tokenDisplay">
+                    Токен загружается...
+                </div>
+                <p class="small-text">Скопируйте и сохраните этот токен в надежном месте. Он потребуется для будущих сессий.</p>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="copyToken">
+                        <i class="fas fa-copy"></i> Копировать токен
+                    </button>
+                    <button class="btn-primary" id="closeTokenModal">
+                        <i class="fas fa-times"></i> Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

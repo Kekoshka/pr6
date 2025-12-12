@@ -21,12 +21,14 @@ namespace pr6.Services
             string tempCode = string.Empty;
 
             char[] letters = "QWERTYUIOIPASDFGHJKLZXCVBNM".ToCharArray();
-            int rndDigit = new Random().Next(0, 9);
-            char rndLetter = letters[new Random().Next(0, letters.Length)];
-            int rndLetOrDig = new Random().Next(0, 1);
 
             for (int i = 0; i < length; i++)
+            {
+                int rndDigit = new Random().Next(0, 9);
+                char rndLetter = letters[new Random().Next(0, letters.Length)];
+                int rndLetOrDig = new Random().Next(0,2);
                 tempCode += rndLetOrDig == 0 ? rndDigit.ToString() : rndLetter;
+            }
 
             return tempCode;
         }

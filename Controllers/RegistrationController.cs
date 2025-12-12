@@ -7,10 +7,10 @@ namespace pr6.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RegistrationService : ControllerBase
+    public class RegistrationController : ControllerBase
     {
         IRegistrationService _registrationService;
-        public RegistrationService(IRegistrationService registrationService) 
+        public RegistrationController(IRegistrationService registrationService) 
         {
             _registrationService = registrationService;
         }
